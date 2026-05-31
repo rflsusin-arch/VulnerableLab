@@ -6,6 +6,7 @@ import br.unipar.frameworks.model.User;
 import br.unipar.frameworks.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.Map;
 
@@ -14,9 +15,12 @@ import java.util.Map;
 public class AuthController {
 
     private final UserRepository userRepository;
+    // AuthController.java
+    private final PasswordEncoder passwordEncoder;
 
-    public AuthController(UserRepository userRepository) {
+    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PostMapping("/register")
@@ -24,7 +28,7 @@ public class AuthController {
         User user = new User();
         user.setName(request.name());
         user.setEmail(request.email());
-        user.setPassword(request.password());
+        user.setPassword(passwordEncoder.encode(request.password())); // HASH AQUI
         user.setRole("USER");
         return ResponseEntity.ok(userRepository.save(user));
     }
@@ -32,7 +36,7 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         return userRepository.findByEmail(request.email())
-                .filter(user -> user.getPassword().equals(request.password()))
+                .filter(user -> passwordEncoder.matches(request.password(), user.getPassword()))
                 .<ResponseEntity<?>>map(user -> ResponseEntity.ok(Map.of(
                         "message", "Login realizado para laboratório",
                         "fakeToken", "TOKEN-" + user.getId() + "-" + user.getRole(),

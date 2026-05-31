@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.math.BigDecimal;
 
@@ -23,10 +24,13 @@ public class VulnerableLabApplication {
     @Bean
     CommandLineRunner seedData(UserRepository userRepository,
                                ProductRepository productRepository,
-                               CommentRepository commentRepository) {
+                               CommentRepository commentRepository,
+                               PasswordEncoder passwordEncoder) { // ← INJEÇÃO
         return args -> {
-            User admin = new User(null, "Admin", "admin@lab.local", "admin123", "ADMIN");
-            User student = new User(null, "Aluno", "aluno@lab.local", "aluno123", "USER");
+            User admin = new User(null, "Admin", "admin@lab.local",
+                    passwordEncoder.encode("admin123"), "ADMIN"); // ← ENCODE
+            User student = new User(null, "Aluno", "aluno@lab.local",
+                    passwordEncoder.encode("aluno123"), "USER");  // ← ENCODE
             userRepository.save(admin);
             userRepository.save(student);
 
