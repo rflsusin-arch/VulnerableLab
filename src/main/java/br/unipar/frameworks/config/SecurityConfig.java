@@ -4,16 +4,24 @@ package br.unipar.frameworks.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
-// Importa a implementação BCrypt do Spring Security.
-// Importa a interface genérica de encoder de senhas do Spring Security.
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 // @Configuration indica ao Spring que esta classe declara Beans de configuração.
 // É equivalente a um arquivo XML de configuração
 @Configuration
 public class SecurityConfig {
+
+    // Injeta o filtro JWT criado em JwtAuthFilter.java
+    // Ele será executado em toda requisição para verificar o token Bearer
+    private final JwtAuthFilter jwtAuthFilter;
+
+    public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
+        this.jwtAuthFilter = jwtAuthFilter;
+    }
 
     // @Bean registra o retorno deste método como um componente gerenciado pelo Spring.
     // O Spring Boot auto-detecta o SecurityFilterChain e aplica as regras de segurança
@@ -29,11 +37,17 @@ public class SecurityConfig {
                 // Em aplicações com formulários HTML tradicional, deixaria habilitado.
                 .csrf(csrf -> csrf.disable())
 
+                // Define a política de sessão como STATELESS
+                // o servidor não guarda nenhum estado de autenticação entre requisições.
+                // Cada requisição precisa enviar o token JWT no header Authorization.
+                .sessionManagement(s -> s
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 // Define as regras de autorização por rota:
                 .authorizeHttpRequests(auth -> auth
 
-                        // Rotas de autenticação (/api/auth/login, /api/auth/register) são
-                        // públicas — qualquer pessoa pode acessar sem estar logada.
+                        // Rotas de autenticação (/api/auth/login, /api/auth/register)
+                        // sãopúblicas qualquer pessoa pode acessar sem estar logada.
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // Rotas administrativas exigem que o usuário esteja autenticado
@@ -54,13 +68,20 @@ public class SecurityConfig {
                 // Por padrão, o Spring Security bloqueia iframes via header
                 // "X-Frame-Options: DENY". Esta linha desabilita essa proteção
                 // para que o console H2 consiga carregar normalmente.
-                // Em produção, NUNCA desabilite isso abre brecha para Clickjacking.
-                .headers(h -> h.frameOptions(f -> f.disable()));
+                // Em produção, NUNCA desabilite isso — abre brecha para Clickjacking.
+                .headers(h -> h.frameOptions(f -> f.disable()))
+
+                // Registra o JwtAuthFilter para executar ANTES do filtro padrão
+                // de autenticação por usuário/senha do Spring Security.
+                // Assim, se o token JWT for válido, o usuário já entra autenticado
+                // sem precisar de usuário/senha em memória.
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         // Retorna a cadeia de filtros configurada.
         // O Spring Boot a registra automaticamente no pipeline de requisições HTTP.
         return http.build();
     }
+
     // @Bean registra este PasswordEncoder no contexto do Spring.
     // Assim ele pode ser injetado em qualquer outro componente via @Autowired
     // ou injeção por construtor (como no AuthController).

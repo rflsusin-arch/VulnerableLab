@@ -7,6 +7,7 @@ import br.unipar.frameworks.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import br.unipar.frameworks.service.JwtService;
 
 import java.util.Map;
 
@@ -15,12 +16,18 @@ import java.util.Map;
 public class AuthController {
 
     private final UserRepository userRepository;
-    // AuthController.java
+    // Adiciona injeção do PasswordEncoder no construtor
     private final PasswordEncoder passwordEncoder;
+    // Adiciona injeção do JwtService no construtor
+    private final JwtService jwtService;
 
-    public AuthController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+
+    public AuthController(UserRepository userRepository,
+                          PasswordEncoder passwordEncoder,
+                          JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
     }
 
     @PostMapping("/register")
@@ -38,9 +45,10 @@ public class AuthController {
         return userRepository.findByEmail(request.email())
                 .filter(user -> passwordEncoder.matches(request.password(), user.getPassword()))
                 .<ResponseEntity<?>>map(user -> ResponseEntity.ok(Map.of(
-                        "message", "Login realizado para laboratório",
-                        "fakeToken", "TOKEN-" + user.getId() + "-" + user.getRole(),
-                        "user", user
+                        // Token JWT real no lugar do fakeToken
+                        "token", jwtService.generateToken(user.getEmail(), user.getRole()),
+                        "email", user.getEmail(),
+                        "role", user.getRole()
                 )))
                 .orElseGet(() -> ResponseEntity.status(401).body(Map.of(
                         "error", "Email ou senha inválidos"
