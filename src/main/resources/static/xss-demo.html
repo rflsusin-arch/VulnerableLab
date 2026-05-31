@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Demonstração XSS</title>
+</head>
+<body>
+  <h1>Demonstração conceitual de XSS</h1>
+  <p>Esta página compara renderização segura e insegura de conteúdo vindo do usuário.</p>
+
+  <label>Comentário:</label>
+  <input id="comment" value="Texto comum do usuário" />
+  <button onclick="renderizar()">Renderizar</button>
+
+  <h2>Seguro: textContent</h2>
+  <div id="safeOutput"></div>
+
+  <h2>Inseguro: innerHTML</h2>
+  <div id="unsafeOutput"></div>
+
+  <p><strong>Discussão:</strong> frameworks costumam escapar conteúdo por padrão em templates, mas o desenvolvedor pode criar risco ao forçar HTML bruto sem sanitização.</p>
+
+  <script>
+    function renderizar() {
+      const valor = document.getElementById("comment").value;
+      document.getElementById("safeOutput").textContent = valor;
+      document.getElementById("unsafeOutput").innerHTML = valor;
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spring Vulnerable Lab</title>
+</head>
+<body>
+  <h1>Spring Vulnerable Lab</h1>
+  <p>Laboratório para discutir segurança em frameworks.</p>
+  <ul>
+    <li><a href="/h2-console">Console H2</a></li>
+    <li><a href="/xss-demo.html">Demonstração de renderização</a></li>
+  </ul>
+
+  <button id="adminButton" onclick="location.href='/api/admin/users'">Área administrativa</button>
+
+  <script>
+    const perfilUsuario = "USER";
+    if (perfilUsuario !== "ADMIN") {
+      document.getElementById("adminButton").style.display = "none";
+    }
+  </script>
+</body>
+</html>
