@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import br.unipar.frameworks.service.JwtService;
+import jakarta.validation.Valid;
 
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<User> register(@Valid @RequestBody RegisterRequest request) {
         User user = new User();
         user.setName(request.name());
         user.setEmail(request.email());
@@ -41,7 +42,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest request) {
         return userRepository.findByEmail(request.email())
                 .filter(user -> passwordEncoder.matches(request.password(), user.getPassword()))
                 .<ResponseEntity<?>>map(user -> ResponseEntity.ok(Map.of(
