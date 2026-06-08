@@ -1,0 +1,53 @@
+# .github/dependabot.yml
+# Configura o Dependabot para monitorar dependências e abrir PRs
+# automaticamente quando houver atualizações de segurança.
+# Documentação: https://docs.github.com/en/code-security/dependabot
+
+version: 2
+updates:
+
+  # ============================================================
+  # Maven — dependências Java do pom.xml
+  # ============================================================
+  - package-ecosystem: "maven"
+    # Diretório raiz onde está o pom.xml
+    directory: "/"
+    schedule:
+      # Verifica atualizações toda segunda-feira às 9h (horário de Brasília = UTC-3)
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    # Número máximo de PRs abertos simultaneamente
+    open-pull-requests-limit: 10
+    # Labels aplicadas nos PRs do Dependabot para fácil identificação
+    labels:
+      - "dependencies"
+      - "java"
+      - "security"
+    # Mensagem de commit nos PRs gerados
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # Agrupa todas as atualizações de patch em um único PR (menos ruído)
+    groups:
+      patch-updates:
+        update-types:
+          - "patch"
+
+  # ============================================================
+  # GitHub Actions — workflows em .github/workflows/
+  # ============================================================
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "America/Sao_Paulo"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(actions)"

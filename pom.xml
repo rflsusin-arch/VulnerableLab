@@ -74,6 +74,25 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
+            <!-- OWASP Dependency Check escaneia CVEs nas dependências -->
+            <plugin>
+                <groupId>org.owasp</groupId>
+                <artifactId>dependency-check-maven</artifactId>
+                <version>10.0.3</version>
+                <configuration>
+                    <!-- Gera relatório HTML em target/dependency-check-report.html -->
+                    <format>HTML</format>
+                    <!-- Também gera JSON para integração com CI/CD -->
+                    <formats>
+                        <format>HTML</format>
+                        <format>JSON</format>
+                    </formats>
+                    <!-- Falha o build se encontrar CVE com score >= 7 (HIGH) -->
+                    <failBuildOnCVSS>7</failBuildOnCVSS>
+                    <!-- Suprime falsos positivos -->
+                    <suppressionFile>owasp-suppressions.xml</suppressionFile>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>

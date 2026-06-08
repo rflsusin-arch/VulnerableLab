@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    owasp-suppressions.xml
+    Arquivo para suprimir falsos positivos do OWASP Dependency Check.
+    Use quando uma CVE não se aplica ao seu contexto de uso.
+    SEMPRE documente o motivo da supressão e a data.
+
+    Exemplo de supressão:
+    <suppress>
+        <notes>Falso positivo: CVE-XXXX-YYYY não afeta este módulo
+        porque não usamos a feature X. Revisado em 2026-06-07.</notes>
+        <cve>CVE-XXXX-YYYY</cve>
+    </suppress>
+-->
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+
+    <!--
+        H2 Console — vulnerabilidade de acesso remoto (RCE).
+        Suprimida APENAS porque o console H2 já está desabilitado
+        no perfil de produção (application-prod.properties).
+        Em produção, o H2 não é incluído no build.
+        Revisado em: 2026-06-07
+    -->
+    <!--
+    <suppress>
+        <notes>H2 console desabilitado em prod. Sem risco.</notes>
+        <cve>CVE-2021-42392</cve>
+    </suppress>
+    -->
+
+</suppressions>
