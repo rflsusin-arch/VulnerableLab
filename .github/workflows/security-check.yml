@@ -36,7 +36,7 @@ jobs:
       # Passo 3 Cache do Maven para acelerar builds subsequentes
       # O cache é invalidado quando o pom.xml muda
       - name: Cache Maven
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -46,7 +46,7 @@ jobs:
       # Passo 4 Cache do banco de dados NVD do OWASP
       # Evita baixar ~200MB de CVEs a cada execução
       - name: Cache OWASP NVD Database
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.m2/repository/org/owasp/dependency-check-data
           key: owasp-nvd-${{ github.run_id }}
