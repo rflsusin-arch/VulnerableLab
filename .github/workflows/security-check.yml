@@ -56,6 +56,8 @@ jobs:
       # Passo 5 Executa o OWASP Dependency Check
       # -DfailBuildOnCVSS=7 falha se encontrar CVE HIGH ou CRITICAL
       - name: Executar OWASP Dependency Check
+        id: owasp
+        continue-on-error: true
         run: mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=7
         env:
           # API Key do NVD para evitar rate limiting (opcional mas recomendado)
@@ -64,11 +66,16 @@ jobs:
           NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
 
       # Passo 6 Salva o relatório HTML como artefato do workflow
-      # Disponível para download em: Actions > workflow run > Artifacts
       - name: Publicar relatório OWASP
         uses: actions/upload-artifact@v4
-        if: always() # Publica mesmo se o build falhou (para análise)
         with:
           name: owasp-report-${{ github.run_number }}
           path: target/dependency-check-report.html
-          retention-days: 30 # Mantém o relatório por 30 dias
+          retention-days: 30
+
+      # Passo 7 Falha o job caso o passo 5 tenha dado erro
+      - name: Verificar falha no OWASP
+        if: steps.owasp.outcome == 'failure'
+        run: |
+          echo "Vulnerabilidades com score >= 7 foram encontradas!"
+          exit 1
