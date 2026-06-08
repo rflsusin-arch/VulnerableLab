@@ -67,7 +67,7 @@ jobs:
 
       # Passo 6 Salva o relatório HTML como artefato do workflow
       - name: Publicar relatório OWASP
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: owasp-report-${{ github.run_number }}
           path: target/dependency-check-report.html
