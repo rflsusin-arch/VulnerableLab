@@ -24,7 +24,7 @@ jobs:
     steps:
       # Passo 1 Baixa o código do repositório
       - name: Checkout do repositório
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       # Passo 2 Configura o Java 17 (mesmo da aplicação)
       - name: Configurar Java 17
