@@ -14,57 +14,43 @@ import org.springframework.web.cors.CorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
-
-    //Injeta o CorsConfigurationSource definido no CorsLabConfig.java
     private final CorsConfigurationSource corsConfigurationSource;
+    private final RateLimitFilter rateLimitFilter;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter,
-                          CorsConfigurationSource corsConfigurationSource) {
+                          CorsConfigurationSource corsConfigurationSource,
+                          RateLimitFilter rateLimitFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
         this.corsConfigurationSource = corsConfigurationSource;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-                //CORS habilitado e apontando para o CorsLabConfig
-                // Sem isso Spring Security bloqueia ANTES do filtro CORS
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-
-                // CSRF desabilitado (API stateless com JWT)
                 .csrf(csrf -> csrf.disable())
-
-                // Sessão stateless cada requisição precisa do token JWT
                 .sessionManagement(s -> s
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
 
                 .authorizeHttpRequests(auth -> auth
-
-                        // Rotas de auth com e sem prefixo /api/ (cobre os dois casos)
                         .requestMatchers("/api/auth/**", "/auth/**").permitAll()
-
-                        // Swagger liberado para acesso sem autenticação
                         .requestMatchers(
                                 "/swagger-ui/**",
                                 "/swagger-ui.html",
                                 "/v3/api-docs/**"
                         ).permitAll()
-
-                        // Console H2 liberado
                         .requestMatchers("/h2-console/**").permitAll()
-
-                        // Rotas admin exigem role ADMIN
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-
-                        // Tudo o resto exige autenticação
                         .anyRequest().authenticated()
                 )
 
-                // Desabilita proteção de iframe para o console H2 funcionar
                 .headers(h -> h.frameOptions(f -> f.disable()))
 
-                // JWT roda antes do filtro padrão de usuário/senha
+                // Ambos os filtros registrados antes do UsernamePasswordAuthenticationFilter
+                // RateLimit roda primeiro (ordem de adição importa aqui)
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
